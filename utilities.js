@@ -52,10 +52,8 @@ window.gregbrown = window.gregbrown || {};
 
     gregbrown.polite_scroll_to = function(val, duration, callback) {
         /* scrolls body to a value, without fighting the user if they
-           try to scroll in the middle of the animation.
-           Note, if you call this multiple times simulatenously, the calls
-           will cancel each other, with unpredictable results. */
-
+           try to scroll in the middle of the animation. */
+        
         var auto_scroll = false,
             scroll_el = $("html, body"),
             events_el = $(window);
@@ -63,6 +61,7 @@ window.gregbrown = window.gregbrown || {};
         function stop_scroll() {
             if (!auto_scroll) {
                 scroll_el.stop(true, false);
+                cancel_stop();
             }
             else {
                 auto_scroll = false;
@@ -73,8 +72,12 @@ window.gregbrown = window.gregbrown || {};
         var stop_timeout = setTimeout(function() {
             events_el.on('scroll', stop_scroll);
         }, 100);
+        var cancel_stop = once(function() {
+            clearTimeout(stop_timeout);
+            events_el.off('scroll', stop_scroll);
+        });
 
-        scroll_el.animate({
+        scroll_el.stop().animate({
             scrollTop: get_scroll_pos(val)
         }, {
             duration: duration,
@@ -85,8 +88,7 @@ window.gregbrown = window.gregbrown || {};
                 callback && callback();
             }),
             always: once(function() {
-                events_el.off('scroll', stop_scroll);
-                clearTimeout(stop_timeout);
+                cancel_stop();
             })
         });
     };
