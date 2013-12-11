@@ -229,5 +229,75 @@ window.gregbrown = window.gregbrown || {};
         return map_href.match(/ll=([\d\.\-]+),([\d\.\-]+)/).slice(1);
     };
 
+    gregbrown.fixed_nav = function(nav) {
+        /* Makes a nav element - typically in the site header - and 
+           fixes it to the top of the page once the user has scrolled
+           far enough for it to hit the top. */
+        
+        var parent = nav.parent();
+        
+        // spacer div to keep the layout consistent once we pull out the nav
+        $('<div>').insertAfter(nav).css({
+            height: nav.outerHeight(),
+            marginTop: nav.css('marginTop'),
+            marginBottom: nav.css('marginBottom')
+        });
+        
+        function position() {
+            var scroll = $(window).scrollTop(),
+                breakpoint = nav.prev().offset().top
+                           + nav.prev().outerHeight()
+                           + parseInt(nav.prev().css('marginBottom'));
+           
+            if (scroll > breakpoint) {
+                nav.css({
+                    position: 'fixed',
+                    top: 0,
+                    left: -parent.offset().left - $(window).scrollLeft(),
+                    right: Math.min(0, parent.offset().left + parent.width()
+                                       - $(window).width())
+                });
+            }
+            else {
+                nav.css({
+                    position: 'absolute',
+                    top: breakpoint,
+                    left: 0,
+                    right: 0
+                });
+            }
+        };
+        position();        
+        $(window).on('scroll resize', position);
+    };
+    
+    gregbrown.local_link_state = function(links) {
+        /* Tracks the state of local links, adding a class when the link's
+           target is in view. */
+        
+        var classname = 'current';
+        
+        function set_state() {
+            var scroll = $(window).scrollTop(),
+                breakpoint = scroll + $(window).height() / 2;
+            
+            links.each(function () {
+                var me = $(this),
+                    target = $(me.attr('href'));
+                
+                if (target.length) {
+                    if (target.offset().top < breakpoint && 
+                        (target.offset().top + target.outerHeight()) > breakpoint) {
+                        me.addClass(classname);
+                    }
+                    else {
+                        me.removeClass(classname);
+                    }
+                }
+            });
+        };
+        set_state();        
+        $(window).on('scroll resize', set_state);
+    };
 
 })(jQuery);
