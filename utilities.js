@@ -266,7 +266,7 @@ window.gregbrown = window.gregbrown || {};
             var scroll = $(window).scrollTop(),
                 breakpoint = scroll + $(window).height() / 2;
             
-            links.each(function () {
+            links.filter('[href^="#"]').each(function () {
                 var me = $(this),
                     target = $(me.attr('href'));
                 
