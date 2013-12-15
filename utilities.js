@@ -78,7 +78,7 @@ window.gregbrown = window.gregbrown || {};
         });
     };
 
-    gregbrown.local_scroll = function(links, duration, callback) {
+    gregbrown.local_scroll = function(links, duration, options) {
         /* Smooth-scroll to the link target - links should be a collection
            of #fragment links */
 
@@ -87,8 +87,9 @@ window.gregbrown = window.gregbrown || {};
                 bits = link.attr('href').split('#'),
                 target = $('#' + bits[1]);
 
-            if ((!bits[0] || bits[0] === window.location.pathname) && target.length) {
-                gregbrown.polite_scroll_to(target.offset().top, duration, callback);
+            if ((!bits[0] || bits[0] === window.location.pathname)  && target.length) {
+                var scroll_target = scroll_target = target.offset().top + (options.offset || 0);
+                gregbrown.polite_scroll_to(scroll_target, duration, options.callback);
                 return false;
             }
         });
