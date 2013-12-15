@@ -9,7 +9,7 @@ window.gregbrown = window.gregbrown || {};
 
     gregbrown.now_and_on = function(el, event_type, fn) {
         fn();
-        el.on(event_type, fn);
+        (el.on ? el : $(el)).on(event_type, fn);
     };
 
     function get_scroll_pos(val) {
