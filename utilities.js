@@ -43,7 +43,7 @@ window.gregbrown = window.gregbrown || {};
             scroll_el = $("html, body"),
             events_el = $(window);
 
-        function stop_scroll() {
+        var stop_scroll = _.throttle(function() {
             if (!auto_scroll) {
                 scroll_el.stop(true, false);
                 cancel_stop();
@@ -51,7 +51,7 @@ window.gregbrown = window.gregbrown || {};
             else {
                 auto_scroll = false;
             }
-        };
+        }, 100, {trailing: false});
 
         // workaround weird IOS7 bug
         var stop_timeout = setTimeout(function() {
