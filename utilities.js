@@ -12,21 +12,6 @@ window.gregbrown = window.gregbrown || {};
         el.on(event_type, fn);
     };
 
-    function once(func) {
-        /* Returns a function that will be executed at most one time, no matter how
-           often you call it. Useful for lazy initialization.
-           Stolen from underscore.js */
-
-        var ran = false, memo;
-        return function() {
-            if (ran) return memo;
-            ran = true;
-            memo = func.apply(this, arguments);
-            func = null;
-            return memo;
-        };
-    };
-
     function get_scroll_pos(val) {
         if (typeof val === 'number') {
             return val;
@@ -44,7 +29,7 @@ window.gregbrown = window.gregbrown || {};
             scrollTop: get_scroll_pos(val)
         }, {
             duration: duration,
-            complete: once(function() {
+            complete: _.once(function() {
                 callback && callback();
             })
         });
@@ -72,7 +57,7 @@ window.gregbrown = window.gregbrown || {};
         var stop_timeout = setTimeout(function() {
             events_el.on('scroll', stop_scroll);
         }, 100);
-        var cancel_stop = once(function() {
+        var cancel_stop = _.once(function() {
             clearTimeout(stop_timeout);
             events_el.off('scroll', stop_scroll);
         });
@@ -84,10 +69,10 @@ window.gregbrown = window.gregbrown || {};
             step: function() {
                 auto_scroll = true;
             },
-            complete: once(function() {
+            complete: _.once(function() {
                 callback && callback();
             }),
-            always: once(function() {
+            always: _.once(function() {
                 cancel_stop();
             })
         });
