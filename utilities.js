@@ -137,11 +137,14 @@ window.gregbrown = window.gregbrown || {};
 
     gregbrown.slider = function(container, options) {
         /* Turns a group of block level stacked elements into an animated
-           slider, with elements animating in from the edge of the window.
+           slider, with elements animating in from the edge of the window,
+           or crossfading.
+           
            Options:
                - selector, identifies the children to be animated
                - interval (optional), triggers 'next' at a set interval
-
+               - type, "slider" (default) or "default"
+    
            - Creates next/prev links and a counter to be styled up via css
            - For animations, a css transition is required.
 
@@ -149,7 +152,8 @@ window.gregbrown = window.gregbrown || {};
 
         var items = container.find(options.selector),
             options = $.extend({
-                interval: null
+                interval: null,
+                type: 'slider'
             }, options);
 
         if (items.length < 2) {
@@ -164,20 +168,25 @@ window.gregbrown = window.gregbrown || {};
             timeout;
 
 
-        container.height(items.aggregate('height', 'max'));
+        container.height(items.aggregate('height', 'max')).addClass('slider-enabled');
         items.css({
             position: 'absolute',
             top: 0,
             left: 0
         });
-
-        gregbrown.now_and_on($(window), 'resize', function() {
-            var width = $(window).width();
-            items.each(function(i) {
-                $(this).css('marginLeft', i * width + 'px');
+        
+        if (options.type === 'slider') {
+            gregbrown.now_and_on($(window), 'resize', function() {
+                var width = $(window).width();
+                items.each(function(i) {
+                    $(this).css('marginLeft', i * width + 'px');
+                });
             });
-        });
-
+        }
+        else {
+            items.eq(0).addClass('current');
+        }
+    
         counter.append($('<span>').text(1).addClass('number'))
                .append($('<span>').text(items.length).addClass('total'));
 
@@ -192,9 +201,15 @@ window.gregbrown = window.gregbrown || {};
         function show(which) {
             clearTimeout(timeout);
             current = (current + (which === 'prev' ? -1 : 1) + items.length) % items.length;
-            items.css({
-                left: -current * $(window).width() + 'px'
-            });
+            if (options.type === 'slider') {
+                items.css({
+                    left: -current * $(window).width() + 'px'
+                });
+            }
+            else {
+                items.eq(current).addClass('current');
+                items.not(items.eq(current)).removeClass('current');
+            }
             counter.find('.number').text(current + 1);
 
             set_interval();
