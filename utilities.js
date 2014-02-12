@@ -144,18 +144,21 @@ window.gregbrown = window.gregbrown || {};
                - selector, identifies the children to be animated
                - interval (optional), triggers 'next' at a set interval
                - type, "slider" (default) or "default"
+               - window, to bring items in from the edge of. Defaults to
+                 the actual window
     
            - Creates next/prev links and a counter to be styled up via css
            - For animations, a css transition is required.
 
            */
-
-        var items = container.find(options.selector),
-            options = $.extend({
+    
+        var options = $.extend({
                 interval: null,
-                type: 'slider'
-            }, options);
-
+                type: 'slider',
+                window: window
+            }, options),
+            items = container.find(options.selector);
+    
         if (items.length < 2) {
             return;
         }
@@ -164,9 +167,9 @@ window.gregbrown = window.gregbrown || {};
             prev = $('<a>').html('&larr;').addClass('prev').appendTo(transport),
             next = $('<a>').html('&rarr;').addClass('next').appendTo(transport),
             counter = $('<p>').addClass('counter').appendTo(container),
+            indicators = $('<nav>').addClass('indicators').appendTo(container),
             current = 0,
             timeout;
-
 
         container.height(items.aggregate('height', 'max')).addClass('slider-enabled');
         items.css({
@@ -175,9 +178,15 @@ window.gregbrown = window.gregbrown || {};
             left: 0
         });
         
+        items.each(function(i) {
+            $('<a>').appendTo(indicators).click(function() {
+                show(i);
+            });
+        });
+        
         if (options.type === 'slider') {
             gregbrown.now_and_on($(window), 'resize', function() {
-                var width = $(window).width();
+                var width = $(options.window).width();
                 items.each(function(i) {
                     $(this).css('marginLeft', i * width + 'px');
                 });
@@ -200,10 +209,15 @@ window.gregbrown = window.gregbrown || {};
 
         function show(which) {
             clearTimeout(timeout);
-            current = (current + (which === 'prev' ? -1 : 1) + items.length) % items.length;
+            if (typeof which === 'number') {
+                current = Math.max(0, Math.min(items.length - 1, parseInt(which)));
+            }
+            else {
+                current = (current + (which === 'prev' ? -1 : 1) + items.length) % items.length;
+            }
             if (options.type === 'slider') {
                 items.css({
-                    left: -current * $(window).width() + 'px'
+                    left: -current * $(options.window).outerWidth() + 'px'
                 });
             }
             else {
@@ -211,7 +225,8 @@ window.gregbrown = window.gregbrown || {};
                 items.not(items.eq(current)).removeClass('current');
             }
             counter.find('.number').text(current + 1);
-
+            indicators.find('a').removeClass('current').eq(current).addClass('current');
+            
             set_interval();
         };
 
