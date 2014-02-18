@@ -87,15 +87,19 @@ window.gregbrown = window.gregbrown || {};
                 bits = link.attr('href').split('#'),
                 target = $('#' + bits[1]);
             
-            if ((!bits[0] || bits[0] === window.location.pathname)  && target.length) {
-                var scroll_target = scroll_target = target.offset().top + (options.offset || 0);
-                gregbrown.polite_scroll_to(scroll_target, duration, options.callback);
+            if ((!bits[0] || bits[0] === window.location.pathname) &&
+                target.length) {
+                var scroll_target = target.offset().top + (options.offset || 0);
+                gregbrown.polite_scroll_to(scroll_target, duration, 
+                                           options.callback);
                 return false;
             }
         });
     };
 
-    gregbrown.infinite_scroll = function(container, next_selector, content_selector, auto_offset, callback) {
+    gregbrown.infinite_scroll = function(container, next_selector, 
+                                         content_selector, auto_offset, 
+                                         callback) {
         var loading = false;
         container.on('click', next_selector, function() {
             if (!loading) {
@@ -104,9 +108,10 @@ window.gregbrown = window.gregbrown || {};
                 loading = true;
                 $.get(link.attr('href'), function(html) {
                     var content = $('<div>').html(html),
-                        content_length = container.find(content_selector).length,
+                        content_len = container.find(content_selector).length,
                         next_href = content.find(next_selector).attr('href');
-                    container.find(content_selector).eq(-1).after(content.find(content_selector));
+                    container.find(content_selector)
+                             .eq(-1).after(content.find(content_selector));
                     container.removeClass('loading');
                     
                     if (next_href) {
@@ -115,7 +120,9 @@ window.gregbrown = window.gregbrown || {};
                     else {
                         link.remove();
                     }
-                    callback(container.find(content_selector).slice(content_length), container);
+                    callback(container.find(content_selector)
+                                      .slice(content_len),
+                             container);
                     loading = false;
                 });
             }
@@ -171,7 +178,8 @@ window.gregbrown = window.gregbrown || {};
             current = 0,
             timeout;
     
-        container.height(items.aggregate('height', 'max')).addClass('slider-enabled');
+        container.height(items.aggregate('height', 'max'))
+                 .addClass('slider-enabled');
         items.css({
             position: 'absolute',
             top: 0,
@@ -210,10 +218,12 @@ window.gregbrown = window.gregbrown || {};
         function show(which) {
             clearTimeout(timeout);
             if (typeof which === 'number') {
-                current = Math.max(0, Math.min(items.length - 1, parseInt(which)));
+                current = Math.max(0, Math.min(items.length - 1, 
+                                               parseInt(which)));
             }
             else {
-                current = (current + (which === 'prev' ? -1 : 1) + items.length) % items.length;
+                current = (current + (which === 'prev' ? -1 : 1) +
+                          items.length) % items.length;
             }
             if (options.type === 'slider') {
                 items.css({
@@ -225,7 +235,8 @@ window.gregbrown = window.gregbrown || {};
                 items.not(items.eq(current)).removeClass('current');
             }
             counter.find('.number').text(current + 1);
-            indicators.find('a').removeClass('current').eq(current).addClass('current');
+            indicators.find('a').removeClass('current')
+                      .eq(current).addClass('current');
             
             set_interval();
         };
@@ -241,7 +252,8 @@ window.gregbrown = window.gregbrown || {};
     };
         
     gregbrown.coords_from_link = function(map_href) {
-        // gets coords from a link like https://maps.google.co.nz/?ll=-43,172&...
+        // gets coords from a link like 
+        // https://maps.google.co.nz/?ll=-43,172&...
         return map_href.match(/ll=([\d\.\-]+),([\d\.\-]+)/).slice(1);
     };
     
@@ -303,7 +315,8 @@ window.gregbrown = window.gregbrown || {};
                 
                 if (target.length) {
                     if (target.offset().top < breakpoint && 
-                        (target.offset().top + target.outerHeight()) > breakpoint) {
+                        (target.offset().top + target.outerHeight()) > 
+                        breakpoint) {
                         me.addClass(classname);
                     }
                     else {
