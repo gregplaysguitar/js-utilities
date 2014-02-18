@@ -1,17 +1,17 @@
 window.gregbrown = window.gregbrown || {};
 
 (function($) {
-
+    
     gregbrown.get_youtube_id = function(url) {
         var match = url.match(/v=([A-z0-9]+)/);
         return match ? match[1] : '';
     };
-
+    
     gregbrown.now_and_on = function(el, event_type, fn) {
         fn();
         (el.on ? el : $(el)).on(event_type, fn);
     };
-
+    
     function get_scroll_pos(val) {
         if (typeof val === 'number') {
             return val;
@@ -34,7 +34,7 @@ window.gregbrown = window.gregbrown || {};
             })
         });
     };
-
+    
     gregbrown.polite_scroll_to = function(val, duration, callback) {
         /* scrolls body to a value, without fighting the user if they
            try to scroll in the middle of the animation. */
@@ -42,7 +42,7 @@ window.gregbrown = window.gregbrown || {};
         var auto_scroll = false,
             scroll_el = $("html, body"),
             events_el = $(window);
-
+        
         var stop_scroll = _.throttle(function() {
             if (!auto_scroll) {
                 scroll_el.stop(true, false);
@@ -81,12 +81,12 @@ window.gregbrown = window.gregbrown || {};
     gregbrown.local_scroll = function(links, duration, options) {
         /* Smooth-scroll to the link target - links should be a collection
            of #fragment links */
-
+        
         links.click(function() {
             var link = $(this),
                 bits = link.attr('href').split('#'),
                 target = $('#' + bits[1]);
-
+            
             if ((!bits[0] || bits[0] === window.location.pathname)  && target.length) {
                 var scroll_target = scroll_target = target.offset().top + (options.offset || 0);
                 gregbrown.polite_scroll_to(scroll_target, duration, options.callback);
@@ -134,12 +134,12 @@ window.gregbrown = window.gregbrown || {};
             });
         } 
     };
-
+    
     gregbrown.slider = function(container, options) {
         /* Turns a group of block level stacked elements into an animated
            slider, with elements animating in from the edge of the window,
            or crossfading.
-           
+    
            Options:
                - selector, identifies the children to be animated
                - interval (optional), triggers 'next' at a set interval
@@ -149,7 +149,7 @@ window.gregbrown = window.gregbrown || {};
     
            - Creates next/prev links and a counter to be styled up via css
            - For animations, a css transition is required.
-
+    
            */
     
         var options = $.extend({
@@ -162,7 +162,7 @@ window.gregbrown = window.gregbrown || {};
         if (items.length < 2) {
             return;
         }
-
+    
         var transport = $('<nav>').addClass('transport').appendTo(container),
             prev = $('<a>').html('&larr;').addClass('prev').appendTo(transport),
             next = $('<a>').html('&rarr;').addClass('next').appendTo(transport),
@@ -170,7 +170,7 @@ window.gregbrown = window.gregbrown || {};
             indicators = $('<nav>').addClass('indicators').appendTo(container),
             current = 0,
             timeout;
-
+    
         container.height(items.aggregate('height', 'max')).addClass('slider-enabled');
         items.css({
             position: 'absolute',
@@ -198,7 +198,7 @@ window.gregbrown = window.gregbrown || {};
     
         counter.append($('<span>').text(1).addClass('number'))
                .append($('<span>').text(items.length).addClass('total'));
-
+    
         function set_interval() {
             if (options.interval) {
                 timeout = setTimeout(function() {
@@ -206,7 +206,7 @@ window.gregbrown = window.gregbrown || {};
                 }, options.interval);
             }
         };
-
+    
         function show(which) {
             clearTimeout(timeout);
             if (typeof which === 'number') {
@@ -229,22 +229,22 @@ window.gregbrown = window.gregbrown || {};
             
             set_interval();
         };
-
+    
         prev.click(function() {
             show('prev');
         });
         next.click(function() {
             show('next');
         });
-
+    
         set_interval();
     };
-
+        
     gregbrown.coords_from_link = function(map_href) {
         // gets coords from a link like https://maps.google.co.nz/?ll=-43,172&...
         return map_href.match(/ll=([\d\.\-]+),([\d\.\-]+)/).slice(1);
     };
-
+    
     gregbrown.fixed_nav = function(nav) {
         /* Makes a nav element - typically in the site header - and 
            fixes it to the top of the page once the user has scrolled
