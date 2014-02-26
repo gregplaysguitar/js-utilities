@@ -153,6 +153,11 @@ window.gregbrown = window.gregbrown || {};
                - type, "slider" (default) or "default"
                - window, to bring items in from the edge of. Defaults to
                  the actual window
+               - prev_text & next_text, text for the transport links
+               - change, function called on item change. Arguments: 
+                 - current index
+                 - jquery collection of items
+                 
     
            - Creates next/prev links and a counter to be styled up via css
            - For animations, a css transition is required.
@@ -162,7 +167,10 @@ window.gregbrown = window.gregbrown || {};
         var options = $.extend({
                 interval: null,
                 type: 'slider',
-                window: window
+                window: window,
+                next_text: '&rarr;',
+                prev_text: '&larr;',
+                change: null
             }, options),
             items = container.find(options.selector);
     
@@ -171,8 +179,10 @@ window.gregbrown = window.gregbrown || {};
         }
     
         var transport = $('<nav>').addClass('transport').appendTo(container),
-            prev = $('<a>').html('&larr;').addClass('prev').appendTo(transport),
-            next = $('<a>').html('&rarr;').addClass('next').appendTo(transport),
+            prev = $('<a>').html(options.prev_text).addClass('prev')
+                           .appendTo(transport),
+            next = $('<a>').html(options.next_text).addClass('next')
+                           .appendTo(transport),
             counter = $('<p>').addClass('counter').appendTo(container),
             indicators = $('<nav>').addClass('indicators').appendTo(container),
             current = 0,
@@ -239,6 +249,7 @@ window.gregbrown = window.gregbrown || {};
                       .eq(current).addClass('current');
             
             set_interval();
+            options.change && options.change(current, items);
         };
     
         prev.click(function() {
