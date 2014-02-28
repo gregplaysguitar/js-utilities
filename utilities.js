@@ -187,9 +187,8 @@ window.gregbrown = window.gregbrown || {};
             indicators = $('<nav>').addClass('indicators').appendTo(container),
             current = 0,
             timeout;
-    
-        container.height(items.aggregate('height', 'max'))
-                 .addClass('slider-enabled');
+        
+        container.addClass('slider-enabled');
         items.css({
             position: 'absolute',
             top: 0,
@@ -201,19 +200,21 @@ window.gregbrown = window.gregbrown || {};
                 show(i);
             });
         });
+        items.eq(0).addClass('current');
         
-        if (options.type === 'slider') {
-            gregbrown.now_and_on($(window), 'resize', function() {
+        gregbrown.now_and_on($(window), 'resize', function() {
+            container.height(items.aggregate('height', 'max'));
+            if (options.type === 'slider') {
                 var width = $(options.window).width();
                 items.each(function(i) {
-                    $(this).css('marginLeft', i * width + 'px');
+                    $(this).css({
+                        width: container.width(),
+                        marginLeft: i * width + 'px'
+                    });
                 });
-            });
-        }
-        else {
-            items.eq(0).addClass('current');
-        }
-    
+            }
+        });
+        
         counter.append($('<span>').text(1).addClass('number'))
                .append($('<span>').text(items.length).addClass('total'));
     
