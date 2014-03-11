@@ -205,7 +205,7 @@ window.gregbrown = window.gregbrown || {};
         gregbrown.now_and_on($(window), 'resize', function() {
             container.height(items.aggregate('height', 'max'));
             if (options.type === 'slider') {
-                var width = $(options.window).width();
+                var width = $(options.window).outerWidth();
                 items.each(function(i) {
                     $(this).css({
                         width: container.width(),
