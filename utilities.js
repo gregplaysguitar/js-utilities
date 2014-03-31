@@ -157,11 +157,13 @@ window.gregbrown = window.gregbrown || {};
                - change, function called on item change. Arguments: 
                  - current index
                  - jquery collection of items
-                 
     
-           - Creates next/prev links and a counter to be styled up via css
-           - For animations, a css transition is required.
-    
+           - Creates next/prev links, indicator links, and a counter to be 
+             styled up via css
+           - For sliding animations, a css transition is required on the 
+             .slider-inner element. 
+           - Assumes the animated elements have no left/right margin or padding
+           
            */
     
         var options = $.extend({
@@ -178,7 +180,8 @@ window.gregbrown = window.gregbrown || {};
             return;
         }
     
-        var transport = $('<nav>').addClass('transport').appendTo(container),
+        var inner = container.find('slider-inner'),
+            transport = $('<nav>').addClass('transport').appendTo(container),
             prev = $('<a>').html(options.prev_text).addClass('prev')
                            .appendTo(transport),
             next = $('<a>').html(options.next_text).addClass('next')
@@ -188,32 +191,41 @@ window.gregbrown = window.gregbrown || {};
             current = 0,
             timeout;
         
-        container.addClass('slider-enabled');
         items.css({
-            position: 'absolute',
-            top: 0,
-            left: 0
+            float: 'left'
         });
+        
+        // create the inner element if not in the markup, and append items
+        if (!inner.length) {
+            inner = $('<div>').addClass('slider-inner');
+            inner.insertBefore(items.eq(0));
+            items.appendTo(inner);
+        }
         
         items.each(function(i) {
             $('<a>').appendTo(indicators).click(function() {
                 show(i);
             });
         });
-        items.eq(0).addClass('current');
         
-        gregbrown.now_and_on($(window), 'resize', function() {
-            container.height(items.aggregate('height', 'max'));
-            if (options.type === 'slider') {
-                var width = $(options.window).outerWidth();
+        if (options.type === 'slider') {
+            gregbrown.now_and_on($(window), 'resize', function() {
+                var width = $(options.window).width();
                 items.each(function(i) {
+                    // $(this).css('marginLeft', i * width + 'px');
                     $(this).css({
                         width: container.width(),
-                        marginLeft: i * width + 'px'
+                        marginRight: (width - container.width()) + 'px'
                     });
                 });
-            }
-        });
+                inner.css({
+                    width: items.length * width + 'px'
+                });
+                show(current);
+            });
+        }
+        
+        items.eq(0).addClass('current');
         
         counter.append($('<span>').text(1).addClass('number'))
                .append($('<span>').text(items.length).addClass('total'));
@@ -229,25 +241,26 @@ window.gregbrown = window.gregbrown || {};
         function show(which) {
             clearTimeout(timeout);
             if (typeof which === 'number') {
-                current = Math.max(0, Math.min(items.length - 1, 
-                                               parseInt(which)));
+                current = Math.max(0, Math.min(items.length - 1, parseInt(which)));
             }
             else {
-                current = (current + (which === 'prev' ? -1 : 1) +
-                          items.length) % items.length;
+                current = (current + (which === 'prev' ? -1 : 1) + 
+                           items.length) % items.length;
             }
             if (options.type === 'slider') {
-                items.css({
-                    left: -current * $(options.window).outerWidth() + 'px'
+                inner.css({
+                    marginLeft: -current * $(options.window).outerWidth() + 'px'
                 });
             }
-            else {
-                items.eq(current).addClass('current');
-                items.not(items.eq(current)).removeClass('current');
-            }
+            items.eq(current).addClass('current');
+            items.not(items.eq(current)).removeClass('current');
+            
             counter.find('.number').text(current + 1);
             indicators.find('a').removeClass('current')
-                      .eq(current).addClass('current');
+                                .eq(current).addClass('current');
+            
+            prev[current <= 0 ? 'addClass' : 'removeClass']('end')
+            next[current >= items.length - 1 ? 'addClass' : 'removeClass']('start')
             
             set_interval();
             options.change && options.change(current, items);
