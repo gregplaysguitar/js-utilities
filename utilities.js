@@ -7,6 +7,11 @@ window.gregbrown = window.gregbrown || {};
         return match ? match[1] : '';
     };
     
+    gregbrown.was_clicked = function(el, e) {
+        var target = $(e.target);
+        return (target.is(el) || target.parents().is(el));
+    };
+    
     gregbrown.now_and_on = function(el, event_type, fn) {
         fn();
         (el.on ? el : $(el)).on(event_type, fn);
