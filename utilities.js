@@ -280,11 +280,12 @@ window.gregbrown = window.gregbrown || {};
     
         set_interval();
     };
-        
+    
     gregbrown.coords_from_link = function(map_href) {
         // gets coords from a link like 
         // https://maps.google.co.nz/?ll=-43,172&...
-        return map_href.match(/ll=([\d\.\-]+),([\d\.\-]+)/).slice(1);
+        var match = map_href.match(/ll=\s*([\d\.\-]+)\s*,\s*([\d\.\-]+)/);
+        return match && match.slice(1);
     };
     
     gregbrown.fixed_nav = function(nav) {
