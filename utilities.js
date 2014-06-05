@@ -119,11 +119,16 @@ window.gregbrown = window.gregbrown || {};
         /* Get the target for a local link, if it exists. Link href can be either
            just a hash fragment, i.e. "#footer", or a path *and* a hash fragment
            if the path matches the current page, i.e. "/about#contact". */
+        
         var bits = link.attr('href').split('#'),
             target = $('#' + bits[1]),
-            pathname = window.location.pathname;
-    
-        if ((!bits[0] || bits[0] === pathname) && target.length) {
+            valid_path = (!bits[0] || bits[0] === window.location.pathname);
+        
+        if (valid_path && bits[1] === '') {
+            // special case for no hash fragment, i.e. top of the page
+            return $('body');
+        }
+        else if (valid_path && target.length) {
             return target;
         }
     };
@@ -412,26 +417,40 @@ window.gregbrown = window.gregbrown || {};
         
         function set_state() {
             var scroll = $(window).scrollTop(),
-                breakpoint = scroll + $(window).height() / 2;
-            
-            links.filter('[href^="#"]').each(function () {
-                var me = $(this),
-                    target = $(me.attr('href'));
+                win_height = $(window).height(),
                 
-                if (target.length) {
-                    if (target.offset().top < breakpoint && 
-                        (target.offset().top + target.outerHeight()) > 
-                        breakpoint) {
-                        me.addClass(classname);
-                    }
-                    else {
-                        me.removeClass(classname);
+                // scroll amount as a proportion - i.e. 0 at the top of the
+                // page and 1 at the bottom
+                scroll_proportion = scroll / ($('body').height() - win_height),
+                
+                // threshold px must fall within the target bounds for it to be 
+                // considered "current". Scaling it by the scroll proportion 
+                // means that elements at the top and bottom of the page will 
+                // be handled as expected.
+                threshold = Math.max(1, scroll + win_height * scroll_proportion),
+                
+                current = undefined,
+                cur_top = 0;
+            
+            links.each(function() {
+                var target = get_link_target($(this));
+                
+                if (target) {
+                    var top = target.offset().top,
+                        bottom = top + target.outerHeight();
+                    if (threshold >= top && threshold <= bottom
+                                         && top > cur_top) {
+                        current = $(this);
+                        cur_top = top;
                     }
                 }
             });
+            current && current.addClass('current');
+            links.not(current).removeClass('current');
         };
+        
         set_state();        
         $(window).on('scroll resize', set_state);
     };
-
+    
 })(jQuery);
