@@ -225,12 +225,13 @@ window.gregbrown = window.gregbrown || {};
                            .appendTo(transport),
             counter = $('<p>').addClass('counter').appendTo(container),
             indicators = $('<nav>').addClass('indicators').appendTo(container),
-            current = 0,
-            timeout;
+            current = 0;
         
-        items.css({
-            float: 'left'
-        });
+        if (options.type === 'slider') {
+            items.css({
+                float: 'left'
+            });
+        }
         
         // create the inner element if not in the markup, and append items
         if (!inner.length) {
@@ -263,20 +264,26 @@ window.gregbrown = window.gregbrown || {};
         }
         
         items.eq(0).addClass('current');
+        indicators.find('a').eq(0).addClass('current');
         
         counter.append($('<span>').text(1).addClass('number'))
                .append($('<span>').text(items.length).addClass('total'));
-    
-        function set_interval() {
-            if (options.interval) {
-                timeout = setTimeout(function() {
-                    show('next');
-                }, options.interval);
-            }
-        };
-    
-        function show(which) {
+        
+        var timeout,
+            playing = !!options.interval;
+        function clear_interval() {
             clearTimeout(timeout);
+            timeout = null;
+        };
+        function set_interval() {
+            clear_interval();
+            timeout = setTimeout(function() {
+                show('next');
+            }, options.interval);
+        };
+        
+        function show(which) {
+            clear_interval();
             if (typeof which === 'number') {
                 current = Math.max(0, Math.min(items.length - 1, parseInt(which)));
             }
@@ -299,7 +306,9 @@ window.gregbrown = window.gregbrown || {};
             prev[current <= 0 ? 'addClass' : 'removeClass']('end')
             next[current >= items.length - 1 ? 'addClass' : 'removeClass']('start')
             
-            set_interval();
+            if (playing) {
+                set_interval();
+            }
             options.change && options.change(current, items);
         };
     
@@ -310,7 +319,23 @@ window.gregbrown = window.gregbrown || {};
             show('next');
         });
     
-        set_interval();
+        if (playing) {
+            set_interval();
+        }
+        
+        return {
+            pause: function() {
+                playing = false;
+                clear_interval();
+            },
+            play: function() {
+                playing = true;
+                set_interval();
+            },
+            is_playing: function() {
+                return playing;
+            }
+        };
     };
     
     gregbrown.coords_from_link = function(map_href) {
