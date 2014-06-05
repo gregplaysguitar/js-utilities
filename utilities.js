@@ -58,7 +58,7 @@ window.gregbrown = window.gregbrown || {};
             return val.offset().top;
         }
     };
-
+    
     gregbrown.impolite_scroll_to = function(val, duration, callback) {
         var scroll_el = $("html, body");
     
@@ -114,18 +114,33 @@ window.gregbrown = window.gregbrown || {};
             })
         });
     };
-
+    
+    function get_link_target(link) {
+        /* Get the target for a local link, if it exists. Link href can be either
+           just a hash fragment, i.e. "#footer", or a path *and* a hash fragment
+           if the path matches the current page, i.e. "/about#contact". */
+        var bits = link.attr('href').split('#'),
+            target = $('#' + bits[1]),
+            pathname = window.location.pathname;
+    
+        if ((!bits[0] || bits[0] === pathname) && target.length) {
+            return target;
+        }
+    };
+    
     gregbrown.local_scroll = function(links, duration, options) {
         /* Smooth-scroll to the link target - links should be a collection
-           of #fragment links */
+           of #fragment or /path#fragment links. */
+    
+        if (!options) {
+            options = {};
+        }
         
+        // scroll on click
         links.click(function() {
-            var link = $(this),
-                bits = link.attr('href').split('#'),
-                target = $('#' + bits[1]);
-            
-            if ((!bits[0] || bits[0] === window.location.pathname) &&
-                target.length) {
+            var target = get_link_target($(this));
+    
+            if (target) {
                 var scroll_target = target.offset().top + (options.offset || 0);
                 gregbrown.polite_scroll_to(scroll_target, duration, 
                                            options.callback);
@@ -133,7 +148,7 @@ window.gregbrown = window.gregbrown || {};
             }
         });
     };
-
+    
     gregbrown.infinite_scroll = function(container, next_selector, 
                                          content_selector, auto_offset, 
                                          callback) {
@@ -303,22 +318,24 @@ window.gregbrown = window.gregbrown || {};
             indicators.find('a').removeClass('current')
                                 .eq(current).addClass('current');
             
-            prev[current <= 0 ? 'addClass' : 'removeClass']('end')
-            next[current >= items.length - 1 ? 'addClass' : 'removeClass']('start')
+            var at_start = current <= 0,
+                at_end = current >= items.length - 1;
+            prev[at_start ? 'addClass' : 'removeClass']('end')
+            next[at_end ? 'addClass' : 'removeClass']('start')
             
             if (playing) {
                 set_interval();
             }
             options.change && options.change(current, items);
         };
-    
+        
         prev.click(function() {
             show('prev');
         });
         next.click(function() {
             show('next');
         });
-    
+        
         if (playing) {
             set_interval();
         }
