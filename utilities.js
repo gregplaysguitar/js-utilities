@@ -40,8 +40,17 @@ window.gregbrown = window.gregbrown || {};
     };
     
     gregbrown.was_clicked = function(el, e) {
+        alert('Deprecated: Use $.fn.closest');
         var target = $(e.target);
-        return (target.is(el) || target.parents().is(el));
+        if (target.is(el)) {
+            return target;
+        }
+        else if (target.parents().is(el)) {
+            return target.parents().filter(el);
+        }
+        else {
+            return null;
+        }
     };
     
     gregbrown.now_and_on = function(el, event_type, fn) {
