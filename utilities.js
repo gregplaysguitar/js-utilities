@@ -7,6 +7,38 @@ window.gregbrown = window.gregbrown || {};
         return match ? match[1] : '';
     };
     
+    gregbrown.youtube_embed = function(container, options) {
+       var player = new YT.Player(container[0], {
+            height: options.height || container.height(),
+            width: options.width || container.width(),
+            playerVars: {
+                controls: 0,
+                autoplay: options.autoplay || 0,
+                autohide: 1,
+                modestbranding: 1,
+                rel: 0,
+                showinfo: 0
+            },
+            videoId: options.youtube_id
+        });
+        
+        function play_pause() {
+            if (player.getPlayerState() !== 1) {
+                player.playVideo();
+                return true;
+            }
+            else {
+                player.pauseVideo();
+                return false;
+            }
+        }
+        
+        return {
+            player: player,
+            play_pause: play_pause
+        };
+    };
+    
     gregbrown.was_clicked = function(el, e) {
         var target = $(e.target);
         return (target.is(el) || target.parents().is(el));
