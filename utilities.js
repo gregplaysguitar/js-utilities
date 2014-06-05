@@ -124,7 +124,7 @@ window.gregbrown = window.gregbrown || {};
         });
     };
     
-    function get_link_target(link) {
+    gregbrown.get_link_target = function(link) {
         /* Get the target for a local link, if it exists. Link href can be either
            just a hash fragment, i.e. "#footer", or a path *and* a hash fragment
            if the path matches the current page, i.e. "/about#contact". */
@@ -152,7 +152,7 @@ window.gregbrown = window.gregbrown || {};
         
         // scroll on click
         links.click(function() {
-            var target = get_link_target($(this));
+            var target = gregbrown.get_link_target($(this));
     
             if (target) {
                 var scroll_target = target.offset().top + (options.offset || 0);
@@ -435,14 +435,14 @@ window.gregbrown = window.gregbrown || {};
                 // threshold px must fall within the target bounds for it to be 
                 // considered "current". Scaling it by the scroll proportion 
                 // means that elements at the top and bottom of the page will 
-                // be handled as expected.
+                // be handled as expected, however small.
                 threshold = Math.max(1, scroll + win_height * scroll_proportion),
                 
                 current = undefined,
                 cur_top = 0;
             
             links.each(function() {
-                var target = get_link_target($(this));
+                var target = gregbrown.get_link_target($(this));
                 
                 if (target) {
                     var top = target.offset().top,
