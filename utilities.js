@@ -216,7 +216,7 @@ window.gregbrown = window.gregbrown || {};
            Options:
                - selector, identifies the children to be animated
                - interval (optional), triggers 'next' at a set interval
-               - type, "slider" (default) or "default"
+               - type, "slider" (default), "infinite-slider" or "default"
                - window, to bring items in from the edge of. Defaults to
                  the actual window
                - prev_text & next_text, text for the transport links
@@ -240,8 +240,11 @@ window.gregbrown = window.gregbrown || {};
                 prev_text: '&larr;',
                 change: null
             }, options),
-            items = container.find(options.selector);
-    
+            items = container.find(options.selector),
+            is_slider = options.type === 'slider' || 
+                        options.type === 'infinite-slider';
+        
+        
         if (items.length < 2) {
             return;
         }
@@ -256,7 +259,7 @@ window.gregbrown = window.gregbrown || {};
             indicators = $('<nav>').addClass('indicators').appendTo(container),
             current = 0;
         
-        if (options.type === 'slider') {
+        if (is_slider) {
             items.css({
                 float: 'left'
             });
@@ -275,7 +278,7 @@ window.gregbrown = window.gregbrown || {};
             });
         });
         
-        if (options.type === 'slider') {
+        if (is_slider) {
             gregbrown.now_and_on($(window), 'resize', function() {
                 var width = $(options.window).width();
                 items.each(function(i) {
@@ -314,15 +317,32 @@ window.gregbrown = window.gregbrown || {};
         function show(which) {
             clear_interval();
             if (typeof which === 'number') {
-                current = Math.max(0, Math.min(items.length - 1, parseInt(which)));
+                current = Math.max(0, Math.min(items.length - 1, 
+                                               parseInt(which)));
             }
             else {
-                current = (current + (which === 'prev' ? -1 : 1) + 
-                           items.length) % items.length;
+                var incr = (which === 'prev' ? -1 : 1);
+                if (options.type === 'infinite-slider') {
+                    current = current + incr;
+                }
+                else {
+                    current = (current + incr + items.length) % items.length;
+                }
             }
-            if (options.type === 'slider') {
+            if (is_slider) {
+                var width = $(options.window).outerWidth(),
+                    margin = -current * width;
+                if (options.type === 'infinite-slider') {
+                    // hack item over into place so it'll slide in as expected
+                    var index = (current + Math.abs(current) * items.length) %
+                                items.length;
+                    items.eq(index).css({
+                        position: 'relative',
+                        left: -margin - index * width
+                    });
+                }
                 inner.css({
-                    marginLeft: -current * $(options.window).outerWidth() + 'px'
+                    marginLeft: margin + 'px'
                 });
             }
             items.eq(current).addClass('current');
@@ -332,10 +352,8 @@ window.gregbrown = window.gregbrown || {};
             indicators.find('a').removeClass('current')
                                 .eq(current).addClass('current');
             
-            var at_start = current <= 0,
-                at_end = current >= items.length - 1;
-            prev[at_start ? 'addClass' : 'removeClass']('end')
-            next[at_end ? 'addClass' : 'removeClass']('start')
+            prev[current <= 0 ? 'addClass' : 'removeClass']('end')
+            next[current >= items.length - 1 ? 'addClass' : 'removeClass']('start')
             
             if (playing) {
                 set_interval();
@@ -363,6 +381,7 @@ window.gregbrown = window.gregbrown || {};
                 playing = true;
                 set_interval();
             },
+            show: show,
             is_playing: function() {
                 return playing;
             }
