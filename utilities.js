@@ -370,9 +370,11 @@ window.gregbrown = window.gregbrown || {};
     };
     
     gregbrown.coords_from_link = function(map_href) {
-        // gets coords from a link like 
+        // gets coords from a link like
+        // https://www.google.co.nz/maps/@-36.856258,174.746699,14z or
         // https://maps.google.co.nz/?ll=-43,172&...
-        var match = map_href.match(/ll=\s*([\d\.\-]+)\s*,\s*([\d\.\-]+)/);
+        var regex = /(?:ll=|\/maps\/@)\s*([\d\.\-]+)\s*,\s*([\d\.\-]+)/,
+            match = map_href.match(regex);
         return match && match.slice(1);
     };
     
