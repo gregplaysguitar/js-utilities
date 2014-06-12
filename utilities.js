@@ -3,7 +3,7 @@ window.gregbrown = window.gregbrown || {};
 (function($) {
     
     gregbrown.get_youtube_id = function(url) {
-        var match = url.match(/(?:v=|youtu.be\/)([A-z0-9]+)/);
+        var match = url.match(/(?:v=|youtu.be\/)([A-z0-9\-]+)/);
         return match ? match[1] : '';
     };
     
