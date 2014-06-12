@@ -278,29 +278,6 @@ window.gregbrown = window.gregbrown || {};
             });
         });
         
-        if (is_slider) {
-            gregbrown.now_and_on($(window), 'resize', function() {
-                var width = $(options.window).width();
-                items.each(function(i) {
-                    // $(this).css('marginLeft', i * width + 'px');
-                    $(this).css({
-                        width: container.width(),
-                        marginRight: (width - container.width()) + 'px'
-                    });
-                });
-                inner.css({
-                    width: items.length * width + 'px'
-                });
-                show(current);
-            });
-        }
-        
-        items.eq(0).addClass('current');
-        indicators.find('a').eq(0).addClass('current');
-        
-        counter.append($('<span>').text(1).addClass('number'))
-               .append($('<span>').text(items.length).addClass('total'));
-        
         var timeout,
             playing = !!options.interval;
         function clear_interval() {
@@ -313,6 +290,60 @@ window.gregbrown = window.gregbrown || {};
                 show('next');
             }, options.interval);
         };
+        
+        
+        function handle_resize() {
+            var width = $(options.window).width();
+            items.each(function(i) {
+                $(this).css({
+                    width: container.width(),
+                    marginRight: (width - container.width()) + 'px'
+                });
+            });
+            inner.css({
+                width: items.length * width + 'px'
+            });
+            show(current);
+        };
+        
+        function initialize() {
+            if (is_slider) {
+                items.css({
+                    float: 'left'
+                });
+                $(window).on('resize', handle_resize);
+                handle_resize();
+            }
+            if (playing) {
+                set_interval();
+            }
+        };
+        initialize();
+        
+        function deinitialize() {
+            if (options.type === 'slider') {
+                items.css({
+                    float: '',
+                    width: '',
+                    marginRight: ''
+                });
+                inner.css({
+                    width: '',
+                    marginLeft: ''
+                });
+                $(window).off('resize', handle_resize);
+            }
+            if (playing) {
+                clear_interval();
+            }
+        };
+        
+        
+        items.eq(0).addClass('current');
+        indicators.find('a').eq(0).addClass('current');
+        
+        counter.append($('<span>').text(1).addClass('number'))
+               .append($('<span>').text(items.length).addClass('total'));
         
         function show(which) {
             clear_interval();
@@ -384,7 +415,9 @@ window.gregbrown = window.gregbrown || {};
             show: show,
             is_playing: function() {
                 return playing;
-            }
+            },
+            disable: deinitialize,
+            enable: initialize
         };
     };
     
