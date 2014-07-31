@@ -472,48 +472,159 @@ window.gregbrown = window.gregbrown || {};
         $(window).on('scroll resize', position);
     };
     
-    gregbrown.local_link_state = function(links) {
+    function bind_handlers(resize, scroll) {
+      resize();
+      scroll($(window).scrollTop(), $(window).scrollLeft());
+      $(window).on('resize', function() {
+        resize($(window).width(), $(window).height());
+      });
+      $(window).on('scroll resize', function() {
+        scroll($(window).scrollTop(), $(window).scrollLeft());
+      });
+    };
+    
+    
+    function in_viewport(scroll_top, body_height, win_height, bounds) {
+      /* Returns the index of the "current" bounds pair in the viewport, if any.
+         bounds should be an array of [top, bottom] pairs, ordered from top to 
+         bottom. Returns -1 if none match. */
+      
+      // normalize to within the actual page, with 5px buffer
+      scroll_top = Math.max(5, Math.min(scroll_top, 
+                                        body_height - win_height - 5));
+      
+          // scroll amount as a proportion - i.e. 0 at the top of the
+          // page and 1 at the bottom
+      var scroll_proportion = scroll_top / (body_height - win_height),
+          
+          // pos px must fall within the target bounds for it to be 
+          // considered "current". Scaling it by the scroll proportion 
+          // means that elements at the top and bottom of the page will 
+          // be handled as expected, however small.
+          pos = Math.max(0, scroll_top + win_height * scroll_proportion);
+      
+      // iterate bottom to top to give precedence to items newly scrolled  
+      // into view
+      for (var i = bounds.length - 1; i >= 0; i--) {
+        if (bounds[i] && pos >= bounds[i][0] && pos <= bounds[i][1]) {
+          return i;
+        }
+      }
+      return -1;
+    };
+    
+    
+    gregbrown.local_link_state = function(links, settings) {
         /* Tracks the state of local links, adding a class when the link's
            target is in view. */
         
-        var classname = 'current';
+        var options = $.extend({
+              bind: true,
+              callback: null
+            }, settings),
+            classname = 'current',
+            win_height,
+            body_height,
+            bounds;
         
-        function set_state() {
-            var scroll = $(window).scrollTop(),
-                win_height = $(window).height(),
-                
-                // scroll amount as a proportion - i.e. 0 at the top of the
-                // page and 1 at the bottom
-                scroll_proportion = scroll / ($('body').height() - win_height),
-                
-                // threshold px must fall within the target bounds for it to be 
-                // considered "current". Scaling it by the scroll proportion 
-                // means that elements at the top and bottom of the page will 
-                // be handled as expected, however small.
-                threshold = Math.max(1, scroll + win_height * scroll_proportion),
-                
-                current = undefined,
-                cur_top = 0;
+        function resize(ww, wh) {
+          win_height = wh;
+          body_height = $('body').height();
+          
+          bounds = [];
+          links.each(function() {
+            var target = gregbrown.get_link_target($(this));
+            if (target) {
+              var top = target.offset().top;
+              bounds.push([top, top + target.outerHeight()]);
+            }
+            else {
+              bounds.push(null);
+            }
+          });
+          
+          // messes with the index for retrieving element
+          // bounds.sort(function(a, b){
+          //   return a[0] - b[0];
+          // });
+        };
+        function scroll(scroll_top, scroll_left) {
+            var idx = in_viewport(scroll_top, body_height, win_height, bounds),
+                current = (idx > -1) ? links.eq(idx) : undefined;
             
-            links.each(function() {
-                var target = gregbrown.get_link_target($(this));
-                
-                if (target) {
-                    var top = target.offset().top,
-                        bottom = top + target.outerHeight();
-                    if (threshold >= top && threshold <= bottom
-                                         && top > cur_top) {
-                        current = $(this);
-                        cur_top = top;
-                    }
-                }
-            });
+            if (options.callback) {
+              if (current && !current.hasClass('current') ||
+                  !current && links.hasClass('current')) {
+                // callback only when the current link changes
+                options.callback(current);
+              }
+            }
             current && current.addClass('current');
             links.not(current).removeClass('current');
         };
         
-        set_state();        
-        $(window).on('scroll resize', set_state);
+        if (options.bind) {
+          bind_handlers(resize, scroll);
+        }
+        return {
+          'resize': resize,
+          'scroll': scroll
+        }
     };
+    
+    
+    gregbrown.element_state = function(elements, callback, settings) {
+        /* Tracks the viewport state of a set of elements, calling a callback
+           function when each element moves into the viewport. */
+        
+        var options = $.extend({
+              bind: true
+            }, settings),
+            win_height,
+            body_height,
+            bounds;
+        
+        function resize(ww, wh) {
+          win_height = wh;
+          body_height = $('body').height();
+          
+          bounds = [];
+          elements.each(function(i) {
+            if ($(this).is(':visible')) {
+              var top = $(this).offset().top;
+              bounds.push([top, top + $(this).outerHeight(), i]);
+            }
+            else {
+              bounds.push(null)
+            }
+          });
+          bounds.sort(function(a, b){
+            return a && b ? a[0] - b[0] : 0;
+          });
+        };
+        
+        var prev_idx = -1;
+        function scroll(scroll_top, scroll_left) {
+            var idx = in_viewport(scroll_top, body_height, win_height, bounds);
+            if (idx !== prev_idx) {
+              if (idx > -1) {
+                callback(elements.eq(bounds[idx][2]));
+              }
+              else {
+                callback(undefined);
+              }
+              prev_idx = idx;
+            }
+        };
+        
+        if (options.bind) {
+          bind_handlers(resize, scroll);
+        }
+        return {
+          'resize': resize,
+          'scroll': scroll
+        }
+    };
+
     
 })(jQuery);
