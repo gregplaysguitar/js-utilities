@@ -129,7 +129,8 @@ window.gregbrown = window.gregbrown || {};
            just a hash fragment, i.e. "#footer", or a path *and* a hash fragment
            if the path matches the current page, i.e. "/about#contact". */
         
-        var bits = link.attr('href').split('#'),
+        var href = (typeof link === 'string') ? link : link.attr('href'),
+            bits = href.split('#'),
             target = $('#' + bits[1]),
             valid_path = (!bits[0] || bits[0] === window.location.pathname);
         
