@@ -150,18 +150,23 @@ window.gregbrown = window.gregbrown || {};
         if (!options) {
             options = {};
         }
-        
-        // scroll on click
-        links.click(function() {
+        function handler() {
             var target = gregbrown.get_link_target($(this));
-    
+        
             if (target) {
                 var scroll_target = target.offset().top + (options.offset || 0);
                 gregbrown.polite_scroll_to(scroll_target, duration, 
                                            options.callback);
                 return false;
             }
-        });
+        };
+        if (typeof links === 'string') {
+            // assume a selector
+            (options.container || $('body')).on('click', links, handler);
+        }
+        else {
+            links.on('click', handler);
+        }
     };
     
     gregbrown.infinite_scroll = function(container, next_selector, 
