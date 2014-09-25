@@ -457,10 +457,17 @@ window.gregbrown = window.gregbrown || {};
         });
         
         function position() {
-            var scroll = $(window).scrollTop(),
-                breakpoint = nav.prev().offset().top
-                           + nav.prev().outerHeight()
-                           + parseInt(nav.prev().css('marginBottom'));
+            var scroll = $(window).scrollTop();
+            
+            if (nav.prev().length) {
+                var breakpoint = nav.prev().offset().top
+                               + nav.prev().outerHeight()
+                               + parseInt(nav.prev().css('marginBottom'));
+            }
+            else {
+                var breakpoint = nav.parent().offset().top
+                               + parseInt(nav.parent().css('paddingTop'));
+            }
            
             if (scroll > breakpoint) {
                 nav.css({
