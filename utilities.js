@@ -235,7 +235,7 @@ window.gregbrown = window.gregbrown || {};
            - For sliding animations, a css transition is required on the 
              .slider-inner element. 
            - Assumes the animated elements have no left/right margin or padding
-           
+    
            */
     
         var options = $.extend({
@@ -312,7 +312,10 @@ window.gregbrown = window.gregbrown || {};
             show(current);
         };
         
+        var initialized = false;
         function initialize() {
+            if (initialized) return;
+            
             if (is_slider) {
                 items.css({
                     float: 'left'
@@ -323,10 +326,13 @@ window.gregbrown = window.gregbrown || {};
             if (playing) {
                 set_interval();
             }
+            initialized = true;
         };
         initialize();
         
         function deinitialize() {
+            if (!initialized) return;
+        
             if (options.type === 'slider') {
                 items.css({
                     float: '',
@@ -342,8 +348,8 @@ window.gregbrown = window.gregbrown || {};
             if (playing) {
                 clear_interval();
             }
+            initialized = false;
         };
-        
         
         items.eq(0).addClass('current');
         indicators.find('a').eq(0).addClass('current');
