@@ -39,6 +39,31 @@ window.gregbrown = window.gregbrown || {};
         };
     };
     
+    var youtube_loading = false;
+    gregbrown.load_youtube_api = function(callback) {
+      /* Load the youtube api, if necessary, then calls the provided ]
+         callback. */
+      
+      if ('YT' in window && 'Player' in window.YT) {
+        callback();
+      }
+      else {
+        // use interval instead of onYouTubeIframeAPIReady because we might have
+        // more than one video loading
+        var interval = setInterval(function() {
+          if ('YT' in window && 'Player' in window.YT) {
+            clearInterval(interval);
+            callback();
+          }
+        }, 100);
+        
+        if (!youtube_loading) {
+          $.getScript('//www.youtube.com/iframe_api');
+          youtube_loading = true;
+        }
+      }
+    };
+    
     gregbrown.was_clicked = function(el, e) {
         alert('Deprecated: Use $.fn.closest');
         var target = $(e.target);
