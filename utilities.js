@@ -8,20 +8,24 @@ window.gregbrown = window.gregbrown || {};
     };
     
     gregbrown.youtube_embed = function(container, options) {
-       var player = new YT.Player(container[0], {
+        var player = new YT.Player(container[0], {
             height: options.height || container.height(),
             width: options.width || container.width(),
             playerVars: {
                 controls: 0,
                 autoplay: options.autoplay || 0,
+                loop: options.loop || 0,
                 autohide: 1,
                 modestbranding: 1,
                 rel: 0,
-                showinfo: 0
+                showinfo: 0,
+                playlist: options.loop ? options.youtube_id : null
+            },
+            events: {
+                onReady: options.ready
             },
             videoId: options.youtube_id
         });
-        
         function play_pause() {
             if (player.getPlayerState() !== 1) {
                 player.playVideo();
