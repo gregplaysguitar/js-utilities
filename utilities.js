@@ -222,7 +222,7 @@ window.gregbrown = window.gregbrown || {};
            Options:
                - selector, identifies the children to be animated
                - interval (optional), triggers 'next' at a set interval
-               - type, "slider" (default), "infinite-slider" or "default"
+               - type, "slider" (default), "infinite-slider" or "basic"
                - window, to bring items in from the edge of. Defaults to
                  the actual window
                - prev_text & next_text, text for the transport links
