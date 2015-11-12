@@ -41,8 +41,9 @@ $.fn.latebox = (function(user_options){
         image.html('').append($('<p>').addClass('loading').text('Loading'));
         
         var link = links.eq(current),
-            new_img = $('<img>').hide().height(link.data('height'))
-                                .width(link.data('width')).appendTo(image);
+            new_img = $('<img>').hide().attr('height', link.data('height'))
+                                .attr('width', link.data('width'))
+                                .appendTo(image);
         
         overlay.fadeIn();
         $('body').css('overflow', 'hidden');
